@@ -1,0 +1,39 @@
+import pandas as pd
+import plotly.express as px
+
+df = pd.read_csv('/Fat_Supply_Quantity_Data (2).csv')
+
+animal_products_columns = ['Country', 'Milk - Excluding Butter', 'Meat', 'Fish, Seafood', 'Eggs', 'Animal fats', 'Aquatic Products, Other', 'Offals']
+df_animal_products = df[animal_products_columns]
+
+grouped_data = df.groupby('Country')[['Confirmed', 'Recovered']].sum()
+grouped_data = grouped_data.sort_values('Recovered', ascending=True)
+bottom_10_recovered = grouped_data.head(10)
+bottom_10_countries = bottom_10_recovered.index.tolist()
+
+df_bottom_10 = df_animal_products[df_animal_products['Country'].isin(bottom_10_countries)]
+
+df_bottom_10_mean = df_bottom_10.mean(numeric_only=True)
+
+labels = ['Milk - Excluding Butter', 'Meat', 'Fish, Seafood', 'Eggs', 'Animal fats', 'Aquatic Products, Other', 'Offals']
+values = df_bottom_10_mean.tolist()
+
+fig = px.pie(df_bottom_10_mean, values=values, names=labels, 
+             title='Mean food intake of animal products during COVID-19 - Countries with lowest recoveries',
+             labels={'value':'%'},
+             color_discrete_sequence=px.colors.qualitative.Dark2,
+             hole=0.4)
+
+fig.update_traces(textposition='inside', textfont=dict(color='white'))
+
+fig.update_layout(title={'font':{'size':20, 'family':'Arial', 'color':'black'},
+                          'x':0.5, 'y':0.95},
+                  legend={'title':{'text':'<b>Animal Products</b>'},
+                          'font':{'size':14, 'family':'Arial'},
+                          'x':0.68, 'y':0.5,
+                          'xanchor': 'right',
+                          'yanchor': 'middle'},
+                  margin=dict(l=0, r=0, t=80, b=0),
+                  showlegend=True)
+
+fig.show()
